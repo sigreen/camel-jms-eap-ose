@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Configures the Camel Context -->
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd        http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd">
+    <bean class="org.springframework.jndi.JndiTemplate" id="jndiTemplate">
+        <property name="environment">
+            <props>
+                <prop key="java.naming.factory.initial">org.jboss.naming.remote.client.InitialContextFactory
+				</prop>
+                <prop key="java.naming.provider.url">remote://localhost:4447</prop>
+                <prop key="java.naming.factory.url.pkgs">org.jnp.interfaces:org.jboss.naming</prop>
+            </props>
+        </property>
+    </bean>
+    <bean class="org.springframework.jndi.JndiObjectFactoryBean" id="jmsQueueConnectionFactory">
+        <property name="jndiTemplate">
+            <ref bean="jndiTemplate"/>
+        </property>
+        <property name="jndiName">
+            <value>jms/RemoteConnectionFactory</value>
+        </property>
+    </bean>
+    <bean
+        class="org.springframework.jms.connection.UserCredentialsConnectionFactoryAdapter" id="authenticatedConnectionFactory">
+        <property name="targetConnectionFactory" ref="jmsQueueConnectionFactory"/>
+        <property name="username" value="sterling"/>
+        <property name="password" value="Abcd1234!"/>
+    </bean>
+    <bean class="org.apache.camel.component.jms.JmsComponent" name="jms">
+        <property name="connectionFactory" ref="authenticatedConnectionFactory"/>
+    </bean>
+    <!-- Here is a sample which processes the input files (leaving them in place 
+		- see the 'noop' flag), and sends them on a JMS queue. This queue is watched 
+		by another route which then performs content based routing on the messages 
+		using XPath. -->
+    <camelContext id="hornetq-injector" trace="true" xmlns="http://camel.apache.org/schema/spring">
+        <route id="inject-test-message">
+            <from id="_from1" uri="file:src/data?noop=true"/>
+            <to id="_to1" uri="jms:SterlingGatewayQ"/>
+        </route>
+    </camelContext>
+</beans>
