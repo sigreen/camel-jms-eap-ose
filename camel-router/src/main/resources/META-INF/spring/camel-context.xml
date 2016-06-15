@@ -1,34 +1,87 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Configures the Camel Context -->
 <beans xmlns="http://www.springframework.org/schema/beans"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd        http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd">
-
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+    xsi:schemaLocation="http://www.springframework.org/schema/beans 
+    					http://www.springframework.org/schema/beans/spring-beans.xsd
+    					http://camel.apache.org/schema/spring 
+    					http://camel.apache.org/schema/spring/camel-spring.xsd">
+    					
     <!-- ActiveMQ Connection -->
     <bean class="org.apache.activemq.camel.component.ActiveMQComponent" id="activemq">
         <property name="brokerURL" value="tcp://localhost:61616"/>
         <property name="userName" value="admin"/>
         <property name="password" value="admin"/>
     </bean>
-    <!-- Here is a sample which processes the input files (leaving them in place 
-		- see the 'noop' flag), and sends them on a JMS queue. This queue is watched 
-		by another route which then performs content based routing on the messages 
-		using XPath. -->
+    <!-- Embedded in-memory DB to demonstrate JDBC -->
+    <bean class="org.apache.commons.dbcp.BasicDataSource"
+        destroy-method="close" id="dataSource">
+        <property name="driverClassName" value="org.apache.derby.jdbc.EmbeddedDriver"/>
+        <property name="url" value="jdbc:derby:memory:contacts;create=true"/>
+        <property name="username" value=""/>
+        <property name="password" value=""/>
+    </bean>
+    <bean class="org.apache.camel.component.sql.SqlComponent" id="sql">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+    <!-- bean which creates/destroys the database table for this example -->
+    <bean class="org.jboss.fuse.examples.jdbc.DatabaseBean"
+        destroy-method="destroy" id="initDatabase" init-method="create">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+    <bean class="org.jboss.fuse.examples.aggregate.DBAggregationStrategy" id="aggregationStrategy"/>
     <camelContext id="camel-router" trace="true" xmlns="http://camel.apache.org/schema/spring">
+        <endpoint id="RemoveOrderDetails" uri="dozer:RemoveOrderDetails?sourceModel=generated.Order&amp;targetModel=generated.Order&amp;marshalId=generated&amp;unmarshalId=generated&amp;mappingFile=transformation.xml"/>
+        <dataFormats>
+            <jaxb contextPath="generated" id="generated"/>
+        </dataFormats>
+        <onException id="_onException1" useOriginalMessage="true">
+            <exception>org.apache.camel.ValidationException</exception>
+            <handled>
+                <constant>true</constant>
+            </handled>
+            <log id="_log3" message="Incoming order XML is invalid.  Error is ${exception.message}. Message contents: ${body}"/>
+            <setHeader headerName="errorMessage" id="_setHeader2">
+                <simple>${exception.message}</simple>
+            </setHeader>
+            <to id="_to4" uri="activemq:error.order"/>
+        </onException>
         <route id="consume-rnw">
+            <!-- Content Based Enrichment -->
             <from id="_from1" uri="activemq:OrderAckToRNW"/>
-			<!-- Content Based Enrichment -->
-			<enrich uri="file:src/data/enrich?noop=true"/>
-			<to uri="http4://localhost:18080/RNW"/>
+            <setHeader headerName="email" id="_setHeader1">
+                <xpath resultType="java.lang.String">/Order/PersonInfoBillTo/@EMailID</xpath>
+            </setHeader>
+            <convertBodyTo id="_convertBodyTo1" type="java.lang.String"/>
+            <enrich id="_enrich1" strategyRef="aggregationStrategy" uri="direct:nameByEmail"/>
+            <to id="_to1" uri="http4://localhost:18080/RNW"/>
         </route>
         <route id="consume-atg">
+            <!-- Transformation -->
             <from id="_from2" uri="activemq:OrderAckToATG"/>
-			<!-- Transformation -->
-			<to uri="http4://localhost:18080/ATG"/>
+            <to id="_to7" uri="ref:RemoveOrderDetails"/>
+            <to id="_to2" uri="http4://localhost:18080/ATG"/>
         </route>
         <route id="consume-payment">
+            <!-- Validation -->
             <from id="_from3" uri="activemq:OrderAckToPayment"/>
-			<!-- Validation -->
-			<to uri="http4://localhost:18080/Payment"/>
+            <to id="_to3" uri="validator:order.xsd"/>
+            <to id="_to4" uri="http4://localhost:18080/Payment"/>
+        </route>
+        <route id="populateDB" startupOrder="1">
+            <from id="_from4" uri="file:src/data/db?noop=true"/>
+            <unmarshal id="_unmarshal1">
+                <csv/>
+            </unmarshal>
+            <split id="_split1">
+                <simple>${body}</simple>
+                <to id="_to5" uri="sql:insert INTO CONTACTS (contact_id, contact_firstname, contact_lastname, contact_email, contact_phone) VALUES (next value FOR contact_id,#,#,#,# )"/>
+            </split>
+            <log id="_log1" message="Updated CONTACTS database."/>
+        </route>
+        <route id="nameByEmail">
+            <from id="_from5" uri="direct:nameByEmail"/>
+            <to id="_to6" uri="sql:select contact_firstname, contact_lastname from CONTACTS where contact_email=:#email"/>
         </route>
     </camelContext>
 </beans>

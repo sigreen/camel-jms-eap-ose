@@ -1,6 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<person user="james">
-  <firstName>James</firstName>
-  <lastName>Strachan</lastName>
-  <city>London</city>
-</person>
+<Order OrderNo="O1208181543" DocumentType="data" EnterpriseCode="NIKEUS">
+	<PersonInfoBillTo DayPhone="251-970-2900" EMailID="ntester26@gmail.com" FirstName="" LastName="" /> 
+</Order>

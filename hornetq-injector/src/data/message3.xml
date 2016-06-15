@@ -1,6 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<person user="jon">
-  <firstName>Jonathan</firstName>
-  <lastName>Anstey</lastName>
-  <city>St. John's</city>
-</person>
+<Order OrderNo="O1208181543" DocumentType="payment" EnterpriseCode="NIKEUS">
+	<PersonInfoBillTo /> 
+</Order>

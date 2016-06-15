@@ -44,11 +44,11 @@
             <from id="_from2" uri="jms:SterlingGatewayQ"/>
             <choice id="_choice1">
                 <when id="_when1">
-                    <xpath>/person/city = 'London'</xpath>
+                    <xpath>/Order/@Status = 'Created'</xpath>
                     <to id="_to2" uri="activemq:OrderAckToRNW"/>
                 </when>
                 <when id="_when2">
-                    <xpath id="_xpath1">/person/city = 'Tampa'</xpath>
+                    <xpath id="_xpath1">/Order/@DocumentType = 'data'</xpath>
                     <to id="_to3" uri="activemq:OrderAckToATG"/>
                 </when>
                 <otherwise id="_otherwise1">
