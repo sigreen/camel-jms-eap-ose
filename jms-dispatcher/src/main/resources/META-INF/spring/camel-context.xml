@@ -2,8 +2,7 @@
 <!-- Configures the Camel Context -->
 <beans xmlns="http://www.springframework.org/schema/beans"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd        http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd">
-
-	<!-- HornetQ JMS Connection -->
+    <!-- HornetQ JMS Connection -->
     <bean class="org.springframework.jndi.JndiTemplate" id="jndiTemplate">
         <property name="environment">
             <props>
@@ -18,20 +17,18 @@
             <ref bean="jndiTemplate"/>
         </property>
         <property name="jndiName">
-             <value>jms/RemoteConnectionFactory</value>
-		</property>
+            <value>jms/RemoteConnectionFactory</value>
+        </property>
     </bean>
     <bean
         class="org.springframework.jms.connection.UserCredentialsConnectionFactoryAdapter" id="authenticatedConnectionFactory">
         <property name="targetConnectionFactory" ref="jmsQueueConnectionFactory"/>
-        <property name="username" value="sterling"/>
+        <property name="username" value="hornetClient"/>
         <property name="password" value="Abcd1234!"/>
     </bean>
     <bean class="org.apache.camel.component.jms.JmsComponent" name="jms">
         <property name="connectionFactory" ref="authenticatedConnectionFactory"/>
     </bean>
-
-
     <!-- ActiveMQ Connection -->
     <bean class="org.apache.activemq.camel.component.ActiveMQComponent" id="activemq">
         <property name="brokerURL" value="tcp://localhost:61616"/>
