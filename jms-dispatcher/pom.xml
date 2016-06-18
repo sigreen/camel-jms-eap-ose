@@ -5,15 +5,15 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>com.redhat</groupId>
-	<packaging>bundle</packaging>
+	<packaging>war</packaging>
 	<version>1.0.0-SNAPSHOT</version>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-		<camel.version>2.15.1.redhat-620133</camel.version>
+		<camel.version>2.15.1.redhat-621084</camel.version>
 		<hornet.version>2.3.24.Final</hornet.version>
-		<activemq.version>5.11.0.redhat-620133</activemq.version>
+		<activemq.version>5.11.0.redhat-621084</activemq.version>
 	</properties>
 
 	<repositories>
@@ -109,6 +109,12 @@
 		  <artifactId>activemq-camel</artifactId>
 		  <version>${activemq.version}</version>
 		</dependency>
+		
+		<dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-web</artifactId>
+            <version>LATEST</version>
+		</dependency>
 
 
 		<!-- logging -->
@@ -116,16 +122,18 @@
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
 			<version>1.7.5</version>
+			
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-log4j12</artifactId>
 			<version>1.7.5</version>
+			
 		</dependency>
 		<dependency>
 			<groupId>log4j</groupId>
 			<artifactId>log4j</artifactId>
-			<version>1.2.17</version>
+			<version>1.2.17</version>	
 		</dependency>
 
 
@@ -137,11 +145,19 @@
 			<scope>test</scope>
 		</dependency>
 		<!-- JBoss Client jars for HornetQ client -->
-		<dependency>
-			<groupId>org.jboss.as</groupId>
-			<artifactId>jboss-as-client-all</artifactId>
-			<version>7.3.4.Final-redhat-1</version>
-		</dependency>
+<!-- 		<dependency> -->
+<!-- 			<groupId>org.jboss.as</groupId> -->
+<!-- 			<artifactId>jboss-as-client-all</artifactId> -->
+<!-- 			<version>7.3.4.Final-redhat-1</version>	 -->
+<!-- 			<scope>provided</scope>	 -->
+<!-- 		</dependency> -->
+
+        <dependency>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-jms-client-bom</artifactId>
+            <version>7.5.0.Final-redhat-21</version>
+            <type>pom</type>
+        </dependency>
 	</dependencies>
 
 	<build>

@@ -2,12 +2,13 @@
 <!-- Configures the Camel Context -->
 <beans xmlns="http://www.springframework.org/schema/beans"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd        http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd">
+
+	<!-- HornetQ JMS Connection -->
     <bean class="org.springframework.jndi.JndiTemplate" id="jndiTemplate">
         <property name="environment">
             <props>
-                <prop key="java.naming.factory.initial">org.jboss.naming.remote.client.InitialContextFactory
-				</prop>
-                <prop key="java.naming.provider.url">remote://localhost:4447</prop>
+                <prop key="java.naming.factory.initial">org.jboss.naming.remote.client.InitialContextFactory</prop>
+                <prop key="java.naming.provider.url">remote://simons-mbp.home:4447</prop>
                 <prop key="java.naming.factory.url.pkgs">org.jnp.interfaces:org.jboss.naming</prop>
             </props>
         </property>
@@ -17,8 +18,8 @@
             <ref bean="jndiTemplate"/>
         </property>
         <property name="jndiName">
-            <value>jms/RemoteConnectionFactory</value>
-        </property>
+             <value>jms/RemoteConnectionFactory</value>
+		</property>
     </bean>
     <bean
         class="org.springframework.jms.connection.UserCredentialsConnectionFactoryAdapter" id="authenticatedConnectionFactory">
@@ -29,6 +30,8 @@
     <bean class="org.apache.camel.component.jms.JmsComponent" name="jms">
         <property name="connectionFactory" ref="authenticatedConnectionFactory"/>
     </bean>
+
+
     <!-- ActiveMQ Connection -->
     <bean class="org.apache.activemq.camel.component.ActiveMQComponent" id="activemq">
         <property name="brokerURL" value="tcp://localhost:61616"/>
