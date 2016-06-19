@@ -9,6 +9,8 @@
                 <prop key="java.naming.factory.initial">org.jboss.naming.remote.client.InitialContextFactory</prop>
                 <prop key="java.naming.provider.url">remote://simons-mbp.home:4447</prop>
                 <prop key="java.naming.factory.url.pkgs">org.jnp.interfaces:org.jboss.naming</prop>
+				<prop key="java.naming.security.principal">hornetClient</prop>
+                <prop key="java.naming.security.credentials">Abcd1234!</prop>
             </props>
         </property>
     </bean>
