@@ -9,8 +9,11 @@
                 <prop key="java.naming.factory.initial">org.jboss.naming.remote.client.InitialContextFactory</prop>
                 <prop key="java.naming.provider.url">remote://simons-mbp.home:4447</prop>
                 <prop key="java.naming.factory.url.pkgs">org.jnp.interfaces:org.jboss.naming</prop>
-				<prop key="java.naming.security.principal">hornetClient</prop>
+                <prop key="java.naming.security.principal">hornetClient</prop>
                 <prop key="java.naming.security.credentials">Abcd1234!</prop>
+				<prop key="jboss.naming.client.connect.options.org.xnio.Options.SASL_DISALLOWED_MECHANISMS">JBOSS-LOCAL-USER</prop>
+   				<prop key="jboss.naming.client.connect.options.org.xnio.Options.SASL_POLICY_NOANONYMOUS">false</prop>
+   				<prop key="jboss.naming.client.connect.options.org.xnio.Options.SASL_POLICY_NOPLAINTEXT">false</prop>
             </props>
         </property>
     </bean>
