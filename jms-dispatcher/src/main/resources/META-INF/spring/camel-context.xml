@@ -13,9 +13,9 @@
                 <prop key="java.naming.security.credentials">Abcd1234!</prop>
                 <prop key="javax.security.sasl.policy.noplaintext">false</prop>
                 <prop key="javax.security.sasl.policy.noanonymous">false</prop>
-                <prop key="jboss.naming.client.connect.options.org.xnio.Options.SASL_DISALLOWED_MECHANISMS">JBOSS-LOCAL-USER</prop>
-                <prop key="jboss.naming.client.connect.options.org.xnio.Options.SASL_POLICY_NOANONYMOUS">false</prop>
-                <prop key="jboss.naming.client.connect.options.org.xnio.Options.SASL_POLICY_NOPLAINTEXT">false</prop>
+                <!--                 <prop key="jboss.naming.client.connect.options.org.xnio.Options.SASL_DISALLOWED_MECHANISMS">JBOSS-LOCAL-USER</prop> -->
+                <!--                 <prop key="jboss.naming.client.connect.options.org.xnio.Options.SASL_POLICY_NOANONYMOUS">false</prop> -->
+                <!--                 <prop key="jboss.naming.client.connect.options.org.xnio.Options.SASL_POLICY_NOPLAINTEXT">false</prop> -->
             </props>
         </property>
     </bean>
@@ -37,8 +37,16 @@
         <property name="connectionFactory" ref="authenticatedConnectionFactory"/>
     </bean>
     <!-- ActiveMQ Connection -->
-    <bean class="org.apache.activemq.camel.component.ActiveMQComponent" id="activemq">
-        <property name="brokerURL" value="tcp://localhost:61616"/>
+    <!--     <bean class="org.apache.activemq.camel.component.ActiveMQComponent" id="activemq"> -->
+    <!--         <property name="brokerURL" value="tcp://localhost:61616"/> -->
+    <!--         <property name="userName" value="admin"/> -->
+    <!--         <property name="password" value="admin"/> -->
+    <!--     </bean> -->
+    <bean class="io.fabric8.mq.camel.AMQComponent" id="activemq">
+        <property name="connectionFactory" ref="connectionFactory"/>
+        <property name="serviceName" value="broker"/>
+    </bean>
+    <bean class="io.fabric8.mq.core.MQConnectionFactory" id="connectionFactory">
         <property name="userName" value="admin"/>
         <property name="password" value="admin"/>
     </bean>
