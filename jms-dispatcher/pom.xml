@@ -109,6 +109,11 @@
 		  <artifactId>activemq-camel</artifactId>
 		  <version>${activemq.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>io.fabric8.mq</groupId>
+			<artifactId>camel-amq</artifactId>
+			<version>LATEST</version>
+		</dependency>
 		
 		<dependency>
             <groupId>org.springframework</groupId>
