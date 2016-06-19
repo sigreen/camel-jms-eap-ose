@@ -14,6 +14,7 @@
 		<camel.version>2.15.1.redhat-621084</camel.version>
 		<hornet.version>2.3.24.Final</hornet.version>
 		<activemq.version>5.11.0.redhat-621084</activemq.version>
+		<fabric8.version>2.2.0.redhat-079</fabric8.version>
 	</properties>
 
 	<repositories>
@@ -90,6 +91,13 @@
 
 	<dependencies>
 		<dependency>
+				<groupId>io.fabric8</groupId>
+				<artifactId>fabric8-project-bom-with-platform-deps</artifactId>
+				<version>${fabric8.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+		</dependency>
+		<dependency>
 			<groupId>org.apache.camel</groupId>
 			<artifactId>camel-core</artifactId>
 			<version>${camel.version}</version>
@@ -112,7 +120,7 @@
 		<dependency>
 			<groupId>io.fabric8.mq</groupId>
 			<artifactId>camel-amq</artifactId>
-			<version>LATEST</version>
+			<version>${fabric8.version}</version>
 		</dependency>
 		
 		<dependency>
@@ -149,13 +157,6 @@
 			<version>${camel.version}</version>
 			<scope>test</scope>
 		</dependency>
-		<!-- JBoss Client jars for HornetQ client -->
-<!-- 		<dependency> -->
-<!-- 			<groupId>org.jboss.as</groupId> -->
-<!-- 			<artifactId>jboss-as-client-all</artifactId> -->
-<!-- 			<version>7.3.4.Final-redhat-1</version>	 -->
-<!-- 			<scope>provided</scope>	 -->
-<!-- 		</dependency> -->
 
         <dependency>
             <groupId>org.jboss.as</groupId>
