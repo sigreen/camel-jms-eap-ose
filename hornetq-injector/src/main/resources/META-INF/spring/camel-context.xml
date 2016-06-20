@@ -7,7 +7,7 @@
             <props>
                 <prop key="java.naming.factory.initial">org.jboss.naming.remote.client.InitialContextFactory
 				</prop>
-                <prop key="java.naming.provider.url">remote://localhost:4447</prop>
+                <prop key="java.naming.provider.url">remote://simons-mbp.home:4447</prop>
                 <prop key="java.naming.factory.url.pkgs">org.jnp.interfaces:org.jboss.naming</prop>
             </props>
         </property>
@@ -23,7 +23,7 @@
     <bean
         class="org.springframework.jms.connection.UserCredentialsConnectionFactoryAdapter" id="authenticatedConnectionFactory">
         <property name="targetConnectionFactory" ref="jmsQueueConnectionFactory"/>
-        <property name="username" value="sterling"/>
+        <property name="username" value="hornetClient"/>
         <property name="password" value="Abcd1234!"/>
     </bean>
     <bean class="org.apache.camel.component.jms.JmsComponent" name="jms">

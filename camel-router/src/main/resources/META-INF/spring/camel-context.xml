@@ -2,42 +2,47 @@
 <!-- Configures the Camel Context -->
 <beans xmlns="http://www.springframework.org/schema/beans"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.springframework.org/schema/beans           http://www.springframework.org/schema/beans/spring-beans.xsd          http://camel.apache.org/schema/spring           http://camel.apache.org/schema/spring/camel-spring.xsd">
-    <!-- ActiveMQ Connection -->
-<!--     <bean class="org.apache.activemq.camel.component.ActiveMQComponent" id="activemq"> -->
-<!--         <property name="brokerURL" value="tcp://localhost:61616"/> -->
-<!--         <property name="userName" value="admin"/> -->
-<!--         <property name="password" value="admin"/> -->
-<!--     </bean> -->
-    
-    
+    <!-- bridge spring property placeholder with Camel -->
+    <!-- you must NOT use the <context:property-placeholder at the same time, only this bridge bean -->
+    <bean
+        class="org.apache.camel.spring.spi.BridgePropertyPlaceholderConfigurer" id="bridgePropertyPlaceholder">
+        <property name="location" value="env.properties"/>
+    </bean>
     <!-- setup JMS connection factory -->
-	<bean id="poolConnectionFactory" class="org.apache.activemq.pool.PooledConnectionFactory" init-method="start" destroy-method="stop">
-	    <property name="maxConnections" value="8"/>
-	    <property name="connectionFactory" ref="jmsConnectionFactory"/>
-	</bean>
-	 
-	<bean id="jmsConnectionFactory" class="org.apache.activemq.ActiveMQConnectionFactory">
-	    <property name="brokerURL" value="tcp://localhost:61616"/>
-		<property name="userName" value="admin"/>
+    <!--     <bean class="org.apache.activemq.pool.PooledConnectionFactory" -->
+    <!--         destroy-method="stop" id="poolConnectionFactory" init-method="start"> -->
+    <!--         <property name="maxConnections" value="8"/> -->
+    <!--         <property name="connectionFactory" ref="jmsConnectionFactory"/> -->
+    <!--     </bean> -->
+    <!--     <bean class="org.apache.activemq.ActiveMQConnectionFactory" id="jmsConnectionFactory"> -->
+    <!--         <property name="brokerURL" value="tcp://${amq.host}:${amq.port}"/> -->
+    <!--         <property name="userName" value="admin"/> -->
+    <!--         <property name="password" value="admin"/> -->
+    <!--     </bean> -->
+    <!--     setup spring jms TX manager -->
+    <!--     <bean -->
+    <!--         class="org.springframework.jms.connection.JmsTransactionManager" id="jmsTransactionManager"> -->
+    <!--         <property name="connectionFactory" ref="poolConnectionFactory"/> -->
+    <!--     </bean> -->
+    <!--     define our activemq component -->
+    <!--     <bean class="org.apache.activemq.camel.component.ActiveMQComponent" id="activemq"> -->
+    <!--         <property name="connectionFactory" ref="poolConnectionFactory"/> -->
+    <!--         define the jms consumer/producer as transacted -->
+    <!--         <property name="transacted" value="true"/> -->
+    <!--         setup the transaction manager to use -->
+    <!--         if not provided then Camel will automatic use a JmsTransactionManager, however if you -->
+    <!-- 	         for instance use a JTA transaction manager then you must configure it -->
+    <!--         <property name="transactionManager" ref="jmsTransactionManager"/> -->
+    <!--     </bean> -->
+    <!-- Set username and password to values you set in etc/user.properties -->
+    <bean class="io.fabric8.mq.camel.AMQComponent" id="activemq">
+        <property name="connectionFactory" ref="connectionFactory"/>
+        <property name="serviceName" value="broker"/>
+    </bean>
+    <bean class="io.fabric8.mq.core.MQConnectionFactory" id="connectionFactory">
+        <property name="userName" value="admin"/>
         <property name="password" value="admin"/>
-	</bean>
-	 
-	<!-- setup spring jms TX manager -->
-	<bean id="jmsTransactionManager" class="org.springframework.jms.connection.JmsTransactionManager">
-	    <property name="connectionFactory" ref="poolConnectionFactory"/>
-	</bean>
-	 
-	<!-- define our activemq component -->
-	<bean id="activemq" class="org.apache.activemq.camel.component.ActiveMQComponent">
-	    <property name="connectionFactory" ref="poolConnectionFactory"/>
-	    <!-- define the jms consumer/producer as transacted -->
-	    <property name="transacted" value="true"/>
-	    <!-- setup the transaction manager to use -->
-	    <!-- if not provided then Camel will automatic use a JmsTransactionManager, however if you
-	         for instance use a JTA transaction manager then you must configure it -->
-	    <property name="transactionManager" ref="jmsTransactionManager"/>
-	</bean>
-    
+    </bean>
     <!-- Embedded in-memory DB to demonstrate JDBC -->
     <bean class="org.apache.commons.dbcp.BasicDataSource"
         destroy-method="close" id="dataSource">
@@ -57,13 +62,14 @@
     <bean
         class="org.jboss.fuse.examples.aggregate.DBAggregationStrategy" id="aggregationStrategy"/>
     <camelContext id="camel-router" trace="false" xmlns="http://camel.apache.org/schema/spring">
-     	<propertyPlaceholder id="properties" location="env.properties"/>
+        <!-- propertyPlaceholder id="properties" location="env.properties"/ -->
         <endpoint id="RemoveOrderDetails" uri="dozer:RemoveOrderDetails?sourceModel=generated.Order&amp;targetModel=generated.Order&amp;marshalId=generated&amp;unmarshalId=generated&amp;mappingFile=transformation.xml"/>
         <dataFormats>
             <jaxb contextPath="generated" id="generated"/>
         </dataFormats>
-    	<redeliveryPolicyProfile id="HTTPRedeliveryProfile" redeliveryDelay="{{http.retryWaitTime}}" maximumRedeliveries="{{http.connectionRetry}}" retryAttemptedLogLevel="WARN"/>
-
+        <redeliveryPolicyProfile id="HTTPRedeliveryProfile"
+            maximumRedeliveries="{{http.connectionRetry}}"
+            redeliveryDelay="{{http.retryWaitTime}}" retryAttemptedLogLevel="WARN"/>
         <onException id="_onException1" useOriginalMessage="true">
             <exception>org.apache.camel.ValidationException</exception>
             <handled>
@@ -75,12 +81,11 @@
             </setHeader>
             <to id="_to4" uri="activemq:error.order"/>
         </onException>
-        
         <route id="consume-rnw">
             <!-- Content Based Enrichment -->
+            <!--             <transacted id="_transacted1"/> -->
             <from id="_from1" uri="activemq:OrderAckToRNW"/>
-			<transacted/>
-			<onException redeliveryPolicyRef="HTTPRedeliveryProfile">
+            <onException id="_onException1" redeliveryPolicyRef="HTTPRedeliveryProfile">
                 <exception>org.apache.camel.ExchangeTimedOutException</exception>
                 <exception>java.net.ConnectException</exception>
                 <exception>org.apache.camel.CamelException</exception>
@@ -88,24 +93,23 @@
                 <handled>
                     <constant>false</constant>
                 </handled>
-                <log message="** HTTP Connection Error for RNW flow" loggingLevel="WARN"/>
-                <stop/>
-            </onException>    
-            
+                <log id="_log2" loggingLevel="WARN" message="** HTTP Connection Error for RNW flow"/>
+                <stop id="_stop1"/>
+            </onException>
             <setHeader headerName="email" id="_setHeader1">
                 <xpath resultType="java.lang.String">/Order/PersonInfoBillTo/@EMailID</xpath>
             </setHeader>
             <convertBodyTo id="_convertBodyTo1" type="java.lang.String"/>
             <enrich id="_enrich1" strategyRef="aggregationStrategy" uri="direct:nameByEmail"/>
-            <recipientList>
-            	<simple>http4://${properties:http.host}:${properties:http.port}/RNW?httpClient.SocketTimeout=${properties:http.socketTimeout}</simple>
+            <recipientList id="_recipientList1">
+                <simple>http4://${properties:http.host}:${properties:http.port}/RNW?httpClient.SocketTimeout=${properties:http.socketTimeout}</simple>
             </recipientList>
         </route>
         <route id="consume-atg">
             <!-- Transformation -->
+            <!--             <transacted id="_transacted2"/> -->
             <from id="_from2" uri="activemq:OrderAckToATG"/>
-			<transacted/>
-			<onException redeliveryPolicyRef="HTTPRedeliveryProfile">
+            <onException id="_onException2" redeliveryPolicyRef="HTTPRedeliveryProfile">
                 <exception>org.apache.camel.ExchangeTimedOutException</exception>
                 <exception>java.net.ConnectException</exception>
                 <exception>org.apache.camel.CamelException</exception>
@@ -113,20 +117,19 @@
                 <handled>
                     <constant>false</constant>
                 </handled>
-                <log message="** HTTP Connection Error for ATG flow" loggingLevel="WARN"/>
-                <stop/>
-            </onException>  
-            
+                <log id="_log3" loggingLevel="WARN" message="** HTTP Connection Error for ATG flow"/>
+                <stop id="_stop2"/>
+            </onException>
             <to id="_to7" uri="ref:RemoveOrderDetails"/>
-			<recipientList>
-            	<simple>http4://${properties:http.host}:${properties:http.port}/ATG?httpClient.SocketTimeout=${properties:http.socketTimeout}</simple>
+            <recipientList id="_recipientList2">
+                <simple>http4://${properties:http.host}:${properties:http.port}/ATG?httpClient.SocketTimeout=${properties:http.socketTimeout}</simple>
             </recipientList>
         </route>
         <route id="consume-payment">
             <!-- Validation -->
+            <!--             <transacted id="_transacted3"/> -->
             <from id="_from3" uri="activemq:OrderAckToPayment"/>
-        	<transacted/>            
-			<onException redeliveryPolicyRef="HTTPRedeliveryProfile">
+            <onException id="_onException3" redeliveryPolicyRef="HTTPRedeliveryProfile">
                 <exception>org.apache.camel.ExchangeTimedOutException</exception>
                 <exception>java.net.ConnectException</exception>
                 <exception>org.apache.camel.CamelException</exception>
@@ -134,13 +137,12 @@
                 <handled>
                     <constant>false</constant>
                 </handled>
-                <log message="** HTTP Connection Error for Payment flow" loggingLevel="WARN"/>
-                <stop/>
-            </onException>  
-            
+                <log id="_log4" loggingLevel="WARN" message="** HTTP Connection Error for Payment flow"/>
+                <stop id="_stop3"/>
+            </onException>
             <to id="_to3" uri="validator:order.xsd"/>
-			<recipientList>
-            	<simple>http4://${properties:http.host}:${properties:http.port}/Payment?httpClient.SocketTimeout=${properties:http.socketTimeout}</simple>
+            <recipientList id="_recipientList3">
+                <simple>http4://${properties:http.host}:${properties:http.port}/Payment?httpClient.SocketTimeout=${properties:http.socketTimeout}</simple>
             </recipientList>
         </route>
         <route id="populateDB" startupOrder="1">

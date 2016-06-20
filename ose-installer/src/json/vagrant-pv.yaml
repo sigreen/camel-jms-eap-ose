@@ -1,0 +1,14 @@
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: camel-router-file-pv
+  labels:
+    type: local
+spec:
+  capacity:
+    storage: 100Ki
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Recycle
+  hostPath:
+    path: "/opt/camel"

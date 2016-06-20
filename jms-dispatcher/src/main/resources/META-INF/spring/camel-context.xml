@@ -13,9 +13,6 @@
                 <prop key="java.naming.security.credentials">Abcd1234!</prop>
                 <prop key="javax.security.sasl.policy.noplaintext">false</prop>
                 <prop key="javax.security.sasl.policy.noanonymous">false</prop>
-                <!--                 <prop key="jboss.naming.client.connect.options.org.xnio.Options.SASL_DISALLOWED_MECHANISMS">JBOSS-LOCAL-USER</prop> -->
-                <!--                 <prop key="jboss.naming.client.connect.options.org.xnio.Options.SASL_POLICY_NOANONYMOUS">false</prop> -->
-                <!--                 <prop key="jboss.naming.client.connect.options.org.xnio.Options.SASL_POLICY_NOPLAINTEXT">false</prop> -->
             </props>
         </property>
     </bean>

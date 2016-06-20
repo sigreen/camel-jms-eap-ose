@@ -15,7 +15,8 @@ public class DBAggregationStrategy implements AggregationStrategy {
        // Map<?, ?> row = resourceResponse.get(0);   
         String firstname = "";
         String lastname = "";
-        List<Map<String, Object>> rows = resource.getIn().getBody(List.class);
+        @SuppressWarnings("unchecked")
+		List<Map<String, Object>> rows = resource.getIn().getBody(List.class);
         for (Map<String, Object> row : rows) {
             firstname = (String) row.get("CONTACT_FIRSTNAME");
             lastname = (String) row.get("CONTACT_LASTNAME");
