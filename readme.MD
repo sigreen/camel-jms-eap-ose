@@ -10,7 +10,7 @@ The Camel routes used in this example are explained by the following diagram:
 Setup
 ==============================
 
-Please follow the installation / setup instructions [here](ose-install/readme.md).
+Please follow the installation / setup instructions [here](https://github.com/sigreen/camel-jms-eap-ose/tree/master/ose-installer#how-to-install-camel-jms-eap-ose).
 
 Getting Help
 ============================
