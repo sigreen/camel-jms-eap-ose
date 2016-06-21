@@ -23,12 +23,8 @@ import io.fabric8.openshift.api.model.TemplateBuilder;
 import javax.inject.Named;
 import java.util.HashMap;
 
-/**
- * Created by ceposta 
- * <a href="http://christianposta.com/blog>http://christianposta.com/blog</a>.
- */
 @KubernetesModelProcessor
-public class RiderAutoJsonModelProcessor {
+public class CamelRouterJsonModelProcessor {
 
 
     public void withPersistentVolumeClaim(TemplateBuilder builder){
@@ -71,7 +67,7 @@ public class RiderAutoJsonModelProcessor {
         return rc;
     }
 
-    @Named("camel-router-file")
+    @Named("camel-router")
     public void withVolumeMounts(ContainerBuilder builder) {
         builder.withVolumeMounts(new VolumeMount("/deployments/src/data/db", "camel-router-file-volume", false))
                 .build();

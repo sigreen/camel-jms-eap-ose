@@ -20,10 +20,10 @@
     <!--         <property name="password" value="admin"/> -->
     <!--     </bean> -->
     <!--     setup spring jms TX manager -->
-    <!--     <bean -->
-    <!--         class="org.springframework.jms.connection.JmsTransactionManager" id="jmsTransactionManager"> -->
-    <!--         <property name="connectionFactory" ref="poolConnectionFactory"/> -->
-    <!--     </bean> -->
+    <!--         <bean -->
+    <!--             class="org.springframework.jms.connection.JmsTransactionManager" id="jmsTransactionManager"> -->
+    <!--             <property name="connectionFactory" ref="poolConnectionFactory"/> -->
+    <!--         </bean> -->
     <!--     define our activemq component -->
     <!--     <bean class="org.apache.activemq.camel.component.ActiveMQComponent" id="activemq"> -->
     <!--         <property name="connectionFactory" ref="poolConnectionFactory"/> -->
@@ -37,7 +37,13 @@
     <!-- Set username and password to values you set in etc/user.properties -->
     <bean class="io.fabric8.mq.camel.AMQComponent" id="activemq">
         <property name="connectionFactory" ref="connectionFactory"/>
+        <property name="transactionManager" ref="txManager"/>
+        <property name="transacted" value="true"/>
         <property name="serviceName" value="broker"/>
+    </bean>
+    <bean
+        class="org.springframework.jms.connection.JmsTransactionManager" id="txManager">
+        <property name="connectionFactory" ref="connectionFactory"/>
     </bean>
     <bean class="io.fabric8.mq.core.MQConnectionFactory" id="connectionFactory">
         <property name="userName" value="admin"/>
@@ -83,7 +89,6 @@
         </onException>
         <route id="consume-rnw">
             <!-- Content Based Enrichment -->
-            <!--             <transacted id="_transacted1"/> -->
             <from id="_from1" uri="activemq:OrderAckToRNW"/>
             <onException id="_onException1" redeliveryPolicyRef="HTTPRedeliveryProfile">
                 <exception>org.apache.camel.ExchangeTimedOutException</exception>
@@ -96,6 +101,7 @@
                 <log id="_log2" loggingLevel="WARN" message="** HTTP Connection Error for RNW flow"/>
                 <stop id="_stop1"/>
             </onException>
+            <transacted id="_transacted1"/>
             <setHeader headerName="email" id="_setHeader1">
                 <xpath resultType="java.lang.String">/Order/PersonInfoBillTo/@EMailID</xpath>
             </setHeader>
@@ -107,7 +113,6 @@
         </route>
         <route id="consume-atg">
             <!-- Transformation -->
-            <!--             <transacted id="_transacted2"/> -->
             <from id="_from2" uri="activemq:OrderAckToATG"/>
             <onException id="_onException2" redeliveryPolicyRef="HTTPRedeliveryProfile">
                 <exception>org.apache.camel.ExchangeTimedOutException</exception>
@@ -120,6 +125,7 @@
                 <log id="_log3" loggingLevel="WARN" message="** HTTP Connection Error for ATG flow"/>
                 <stop id="_stop2"/>
             </onException>
+            <transacted id="_transacted2"/>
             <to id="_to7" uri="ref:RemoveOrderDetails"/>
             <recipientList id="_recipientList2">
                 <simple>http4://${properties:http.host}:${properties:http.port}/ATG?httpClient.SocketTimeout=${properties:http.socketTimeout}</simple>
@@ -127,7 +133,6 @@
         </route>
         <route id="consume-payment">
             <!-- Validation -->
-            <!--             <transacted id="_transacted3"/> -->
             <from id="_from3" uri="activemq:OrderAckToPayment"/>
             <onException id="_onException3" redeliveryPolicyRef="HTTPRedeliveryProfile">
                 <exception>org.apache.camel.ExchangeTimedOutException</exception>
@@ -140,6 +145,7 @@
                 <log id="_log4" loggingLevel="WARN" message="** HTTP Connection Error for Payment flow"/>
                 <stop id="_stop3"/>
             </onException>
+            <transacted id="_transacted3"/>
             <to id="_to3" uri="validator:order.xsd"/>
             <recipientList id="_recipientList3">
                 <simple>http4://${properties:http.host}:${properties:http.port}/Payment?httpClient.SocketTimeout=${properties:http.socketTimeout}</simple>

@@ -1,4 +1,4 @@
-### How to install camel-jms-eap-ose
+# How to install camel-jms-eap-ose
 
 The camel-jms-eap-ose app consists of a set of microservices, either packaged as Docker containers or as a standalone Camel Boot service.
 
