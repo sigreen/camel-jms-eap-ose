@@ -7,8 +7,7 @@
         <property name="environment">
             <props>
                 <prop key="java.naming.factory.initial">org.jboss.naming.remote.client.InitialContextFactory</prop>
-                <prop key="java.naming.provider.url">remote://simons-mbp.home:4447</prop>
-<!--                 <prop key="java.naming.provider.url">remote://localhost:4447</prop> -->
+                <prop key="java.naming.provider.url">remote://simons-macbook-pro.local:4447</prop>
                 <prop key="java.naming.factory.url.pkgs">org.jnp.interfaces:org.jboss.naming</prop>
                 <prop key="java.naming.security.principal">hornetClient</prop>
                 <prop key="java.naming.security.credentials">Abcd1234!</prop>
@@ -22,57 +21,39 @@
             <ref bean="jndiTemplate"/>
         </property>
         <property name="jndiName">
-            <!--                         <value>jms/RemoteConnectionFactory</value> -->
-            <value>jms/XARemoteConnectionFactory</value>
+            <value>jms/RemoteConnectionFactory</value>
         </property>
     </bean>
-    <!--     <bean -->
-    <!--         class="org.springframework.jms.connection.UserCredentialsConnectionFactoryAdapter" id="authenticatedConnectionFactory"> -->
-    <!--         <property name="targetConnectionFactory" ref="jmsQueueConnectionFactory"/> -->
-    <!--         <property name="username" value="hornetClient"/> -->
-    <!--         <property name="password" value="Abcd1234!"/> -->
-    <!--     </bean> -->
-    <bean class="org.apache.camel.component.jms.JmsComponent" name="jms">
-        <property name="connectionFactory" ref="jmsQueueConnectionFactory"/>
-        
-<!--         <property name="username" value="hornetClient"/> -->
-<!--         <property name="password" value="Abcd1234!"/> -->
-    </bean>
-    <!-- Policy -->
-    <bean class="org.apache.camel.spring.spi.SpringTransactionPolicy" id="PROPAGATION_REQUIRED">
-        <property name="transactionManager" ref="jta.transactionManager"/>
-        <property name="propagationBehaviorName" value="PROPAGATION_REQUIRED"/>
-    </bean>
-    <!-- This is the Spring wrapper over the JTA configuration -->
-    <!-- org.springframework.transaction.PlatformTransactionManager -->
     <bean
-        class="org.springframework.transaction.jta.JtaTransactionManager" id="jta.transactionManager"/>
+        class="org.springframework.jms.connection.UserCredentialsConnectionFactoryAdapter" id="authenticatedConnectionFactory">
+        <property name="targetConnectionFactory" ref="jmsQueueConnectionFactory"/>
+        <property name="username" value="hornetClient"/>
+        <property name="password" value="Abcd1234!"/>
+    </bean>
+    <bean class="org.apache.camel.component.jms.JmsComponent" name="jms">
+        <property name="connectionFactory" ref="authenticatedConnectionFactory"/>
+    </bean>
     <!-- ActiveMQ Connection -->
-    <!--         <bean class="org.apache.activemq.camel.component.ActiveMQComponent" id="activemq"> -->
-    <bean class="org.apache.activemq.ActiveMQXAConnectionFactory" id="xa.connectionFactory">
-        <property name="brokerURL" value="tcp://localhost:61616"/>
-        <property name="userName" value="admin"/>
-        <property name="password" value="admin"/>
-    </bean>
-    <bean class="org.apache.activemq.camel.component.ActiveMQComponent" id="activemq">
-        <property name="connectionFactory" ref="xa.connectionFactory"/>
-        <property name="transactionManager" ref="jta.transactionManager"/>
-        <property name="transacted" value="true"/>
-        <property name="cacheLevelName" value="CACHE_CONSUMER"/>
-    </bean>
-    <!--     <bean class="io.fabric8.mq.camel.AMQComponent" id="activemq"> -->
-    <!--         <property name="connectionFactory" ref="connectionFactory"/> -->
-    <!--         <property name="serviceName" value="broker"/> -->
-    <!--     </bean> -->
-    <!--     <bean class="io.fabric8.mq.core.MQConnectionFactory" id="connectionFactory"> -->
-    <!--         <property name="userName" value="admin"/> -->
-    <!--         <property name="password" value="admin"/> -->
-    <!--     </bean> -->
+<!--     <bean class="org.apache.activemq.camel.component.ActiveMQComponent" id="activemq"> -->
+<!--         <property name="brokerURL" value="tcp://localhost:61616"/> -->
+<!--         <property name="userName" value="admin"/> -->
+<!--         <property name="password" value="admin"/> -->
+<!--     </bean> -->
+        <bean class="io.fabric8.mq.camel.AMQComponent" id="activemq">
+            <property name="connectionFactory" ref="connectionFactory"/>
+            <property name="serviceName" value="broker"/>
+        </bean>
+        <bean class="io.fabric8.mq.core.MQConnectionFactory" id="connectionFactory">
+            <property name="userName" value="admin"/>
+            <property name="password" value="admin"/>
+        </bean>
+    <!-- Here is a sample which processes the input files (leaving them in place 
+		- see the 'noop' flag), and sends them on a JMS queue. This queue is watched 
+		by another route which then performs content based routing on the messages 
+		using XPath. -->
     <camelContext id="jms-dispatcher" trace="true" xmlns="http://camel.apache.org/schema/spring">
         <route id="consume-hornetq">
-            <from id="_from2" uri="jms:SterlingGatewayQ?transacted=true"/>
-            <log id="_log1" message="Consumed message from hornetQ jms:SterlingGatewayQ"/>
-            <transacted id="_transacted1" ref="PROPAGATION_REQUIRED"/>
+            <from id="_from2" uri="jms:SterlingGatewayQ"/>
             <choice id="_choice1">
                 <when id="_when1">
                     <xpath>/Order/@Status = 'Created'</xpath>
