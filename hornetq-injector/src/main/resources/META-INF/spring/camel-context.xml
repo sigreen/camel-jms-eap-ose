@@ -7,7 +7,8 @@
             <props>
                 <prop key="java.naming.factory.initial">org.jboss.naming.remote.client.InitialContextFactory
 				</prop>
-                <prop key="java.naming.provider.url">remote://simons-mbp.home:4447</prop>
+<!--                 <prop key="java.naming.provider.url">remote://simons-mbp.home:4447</prop> -->
+                <prop key="java.naming.provider.url">remote://localhost:4447</prop>
                 <prop key="java.naming.factory.url.pkgs">org.jnp.interfaces:org.jboss.naming</prop>
             </props>
         </property>
@@ -37,6 +38,10 @@
         <route id="inject-test-message">
             <from id="_from1" uri="file:src/data?noop=true"/>
             <to id="_to1" uri="jms:SterlingGatewayQ"/>
+        </route>
+        <route id="read-DLQ">
+            <from id="_from2" uri="jms:DLQ"/>
+            <to id="_to2" uri="file:target/data/DLQ"/>
         </route>
     </camelContext>
 </beans>
