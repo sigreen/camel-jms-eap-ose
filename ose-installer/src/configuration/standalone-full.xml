@@ -120,6 +120,15 @@
             <logger category="jacorb.config">
                 <level name="ERROR"/>
             </logger>
+            <logger category="org.apache.camel">
+                <level name="DEBUG"/>
+            </logger>
+            <logger category="org.springframework">
+                <level name="DEBUG"/>
+            </logger>
+            <logger category="org.apache.activemq">
+                <level name="DEBUG"/>
+            </logger>
             <root-logger>
                 <level name="INFO"/>
                 <handlers>
@@ -274,8 +283,8 @@
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:messaging:1.4">
             <hornetq-server>
+                <persistence-enabled>true</persistence-enabled>
                 <security-enabled>false</security-enabled>
-		<persistence-enabled>true</persistence-enabled>
                 <journal-type>NIO</journal-type>
                 <journal-min-files>2</journal-min-files>
 
@@ -334,6 +343,16 @@
                             <entry name="java:jboss/exported/jms/RemoteConnectionFactory"/>
                         </entries>
                     </connection-factory>
+                    <connection-factory name="XARemoteConnectionFactory">
+                        <factory-type>XA_GENERIC</factory-type>
+                        <connectors>
+                            <connector-ref connector-name="netty"/>
+                        </connectors>
+                        <entries>
+                            <entry name="XARemoteConnectionFactory"/>
+                            <entry name="java:jboss/exported/jms/XARemoteConnectionFactory"/>
+                        </entries>
+                    </connection-factory>
                     <pooled-connection-factory name="hornetq-ra">
                         <transaction mode="xa"/>
                         <connectors>
@@ -350,6 +369,7 @@
                         <entry name="java:/jms/queue/ExpiryQueue"/>
                     </jms-queue>
                     <jms-queue name="DLQ">
+                        <entry name="queue/DLQ"/>
                         <entry name="java:/jms/queue/DLQ"/>
                     </jms-queue>
                     <jms-queue name="testQueue">
@@ -440,8 +460,7 @@
             <inet-address value="${jboss.bind.address.management:127.0.0.1}"/>
         </interface>
         <interface name="public">
-            <!-- inet-address value="${jboss.bind.address:127.0.0.1}"/ -->
-	    <any-address/>
+            <any-address/>
         </interface>
         <interface name="unsecure">
             <inet-address value="${jboss.bind.address.unsecure:127.0.0.1}"/>
